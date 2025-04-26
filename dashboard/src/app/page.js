@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import TicketingDashboard from './components/TicketingDashboard';
+import TicketingDashboard from '@/components/TicketingDashboard';
 import { currentUser } from '@clerk/nextjs/server';
 
 

@@ -26,15 +26,8 @@ export async function POST(req) {
 
 export async function GET() {
   try {
-    const { id } = currentUser();
     await connectDB();
-
-    const tickets = await Ticket.find({
-      $or: [
-        { createdBy: id },
-        { assignedTo: id }
-      ]
-    });
+    const tickets = await Ticket.find({});
 
     return NextResponse.json(tickets);
   } catch (error) {
