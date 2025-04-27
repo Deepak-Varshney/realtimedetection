@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Ticket, Megaphone, ArrowRight } from 'lucide-react';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
-export default function AdminView({ tickets, events, onAssignTicket, onCreateEvent }) {
+export default function AdminView({ tickets, events, setTickets, setEvents }) {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [selectedSupervisor, setSelectedSupervisor] = useState('');
   const [supervisors, setSupervisors] = useState([]);
@@ -10,36 +12,44 @@ export default function AdminView({ tickets, events, onAssignTicket, onCreateEve
   const [showEventForm, setShowEventForm] = useState(false);
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
 
+  // Fetch supervisors on component mount
   useEffect(() => {
-    fetch('/api/users')
-      .then(res => res.json())
-      .then(data => {
-        const supervisorsOnly = data.filter(user => user.role === 'supervisor');
+    const fetchSupervisors = async () => {
+      try {
+        const res = await axios.get('/api/users');
+        const supervisorsOnly = res.data.filter(user => user.role === 'supervisor');
         setSupervisors(supervisorsOnly);
-      })
-      .catch(err => console.error('Failed to load supervisors', err));
-  }, []);
+      } catch (err) {
+        console.error('Failed to load supervisors', err);
+      }
+    };
+    fetchSupervisors();
+  }, []); // Empty dependency array ensures this runs once on mount
 
-  const handleAssign = () => {
-    if (selectedTicket && selectedSupervisor) {
-      onAssignTicket(selectedTicket, selectedSupervisor);
-      setSelectedTicket(null);
-      setSelectedSupervisor('');
-      setShowAssignmentModal(false); // Close modal after assignment
-    }
-  };
-  console.log(supervisors)
-
-  const handleCreateEvent = (e) => {
-    e.preventDefault();
-    if (newEventTitle.trim()) {
-      onCreateEvent(newEventTitle, newEventDesc);
-      setNewEventTitle('');
-      setNewEventDesc('');
-      setShowEventForm(false);
+  // Assign ticket to supervisor
+  const assignTicket = async (ticketId, supervisor) => {
+    try {
+      const res = await axios.put('/api/tickets', { ticketId, assignedTo: supervisor });
+      const updatedTicket = res.data;
+      setTickets(tickets.map(t => t._id === updatedTicket._id ? updatedTicket : t));
+      toast.success('Ticket assigned successfully');
+    } catch {
+      toast.error('Failed to assign ticket');
     }
   };
 
+  // Create a new event
+  const createEvent = async (title, description) => {
+    try {
+      const res = await axios.post('/api/events', { title, description });
+      setEvents([...events, res.data]);
+      toast.success('Event created successfully');
+    } catch {
+      toast.error('Failed to create event');
+    }
+  };
+
+  // Handlers for assignment modal
   const openAssignmentModal = (ticketId) => {
     setSelectedTicket(ticketId);
     setShowAssignmentModal(true);
@@ -50,6 +60,28 @@ export default function AdminView({ tickets, events, onAssignTicket, onCreateEve
     setSelectedTicket(null);
     setSelectedSupervisor('');
   };
+
+  // Event handler to assign ticket
+  const handleAssign = () => {
+    if (selectedTicket && selectedSupervisor) {
+      assignTicket(selectedTicket, selectedSupervisor);
+      setSelectedTicket(null);
+      setSelectedSupervisor('');
+      setShowAssignmentModal(false);
+    }
+  };
+
+  // Event handler to create event
+  const handleCreateEvent = (e) => {
+    e.preventDefault();
+    if (newEventTitle.trim()) {
+      createEvent(newEventTitle, newEventDesc);
+      setNewEventTitle('');
+      setNewEventDesc('');
+      setShowEventForm(false);
+    }
+  };
+
 
   return (
     <div className="space-y-6">
@@ -75,7 +107,7 @@ export default function AdminView({ tickets, events, onAssignTicket, onCreateEve
                 </div>
                 <p className="text-sm text-gray-500 mt-1">{ticket.description}</p>
                 {ticket.assignedTo && (
-                  <p className="text-sm text-gray-500 mt-1">Assigned to: {ticket.assignedTo}</p>
+                  <p className="text-sm text-gray-500 mt-1">Assigned to: {ticket.assignedTo.firstName} {ticket.assignedTo.lastName}</p>
                 )}
               </div>
             ))
@@ -97,13 +129,18 @@ export default function AdminView({ tickets, events, onAssignTicket, onCreateEve
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Select Supervisor</label>
                 <select
-                  value={selectedSupervisor}
-                  onChange={(e) => setSelectedSupervisor(e.target.value)}
+                  value={selectedSupervisor?._id || ''}
+                  onChange={(e) => {
+                    const selected = supervisors.find(sup => sup._id === e.target.value);
+                    setSelectedSupervisor(selected || '');
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">-- Select --</option>
                   {supervisors.map(sup => (
-                    <option key={sup._id} value={sup._id}>{sup.firstName} {sup.lastName}</option>
+                    <option key={sup._id} value={sup._id}>
+                      {sup.firstName} {sup.lastName}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -128,7 +165,8 @@ export default function AdminView({ tickets, events, onAssignTicket, onCreateEve
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
 
       {/* Events Management */}
@@ -199,6 +237,6 @@ export default function AdminView({ tickets, events, onAssignTicket, onCreateEve
           )}
         </div>
       </div>
-    </div>
+    </div >
   );
 }

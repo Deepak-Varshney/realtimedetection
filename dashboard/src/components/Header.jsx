@@ -25,8 +25,11 @@ export default function Header() {
     }, [user]);
 
     const onSignOut = async () => {
-        await signOut();
-        router.push('/login');
+        try {
+            await signOut();
+        } catch (err) {
+            console.error('Sign out error:', err);
+        }
     };
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const role = user?.publicMetadata?.role || 'user';

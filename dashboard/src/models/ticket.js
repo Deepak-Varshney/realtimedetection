@@ -17,7 +17,8 @@ const ticketSchema = new mongoose.Schema({
     clerkId: String,
   },
   createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  updatedAt: { type: Date, default: Date.now },
+  deadline: {type: Date}
 });
 
 ticketSchema.pre("save", function (next) {

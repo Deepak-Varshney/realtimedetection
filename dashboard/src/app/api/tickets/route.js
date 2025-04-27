@@ -37,13 +37,22 @@ export async function GET() {
 
 export async function PUT(req) {
   try {
-    const { id } = currentUser();
-    const { ticketId, status, assignedTo } = await req.json();
+    const { ticketId, status, assignedTo, deadline } = await req.json();
+
+
 
     await connectDB();
     const updateData = {};
+
     if (status) updateData.status = status;
     if (assignedTo) updateData.assignedTo = assignedTo;
+
+    // Use provided deadline based on status
+    if (status === "assigned" && deadline) {
+      updateData.deadline = deadline
+    } else if (status === "extended" && deadline) {
+      updateData.deadline = deadline
+    }
 
     const updatedTicket = await Ticket.findOneAndUpdate(
       { _id: ticketId },
