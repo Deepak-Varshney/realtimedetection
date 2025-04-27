@@ -1,6 +1,7 @@
 import { ClerkProvider } from '@clerk/nextjs';
 import './globals.css';
 import Header from '@/components/Header';
+import { Toaster } from '@/components/ui/sonner';
 
 export const metadata = {
   title: 'Dashboard',
@@ -14,6 +15,7 @@ export default function RootLayout({ children }) {
         <body>
           <Header/>
           {children}
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>

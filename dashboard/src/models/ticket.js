@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 
 const ticketSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
+  category: { type: String, required: true },
+  description: { type: String },
+  subcategory: { type: String, required: true },
   status: {
     type: String,
     enum: ["open", "assigned", "extended", "done"],

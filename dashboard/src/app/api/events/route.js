@@ -7,16 +7,16 @@ export async function POST(req) {
   try {
 
     const { id } = currentUser();
-    const { title, description } = await req.json();
+    const { title, description, createdBy } = await req.json();
 
     await connectDB();
     const newEvent = new Event({
       title,
       description,
-      createdBy: id,
+      createdBy,
       readBy: []
     });
-
+    
     await newEvent.save();
     return NextResponse.json(newEvent);
   } catch (error) {

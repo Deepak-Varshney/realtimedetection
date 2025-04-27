@@ -3,16 +3,16 @@ import Ticket from "@/models/ticket";
 import { NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server';
 
-
 export async function POST(req) {
   try {
     const user = await currentUser();
-    const { title, description } = await req.json();
+    const { category, description, subcategory } = await req.json();
 
     await connectDB();
     const newTicket = new Ticket({
-      title,
+      category,
       description,
+      subcategory,
       createdBy: user.id,
       status: "open"
     });
@@ -39,8 +39,6 @@ export async function PUT(req) {
   try {
     const { ticketId, status, assignedTo, deadline } = await req.json();
 
-
-
     await connectDB();
     const updateData = {};
 
@@ -49,9 +47,9 @@ export async function PUT(req) {
 
     // Use provided deadline based on status
     if (status === "assigned" && deadline) {
-      updateData.deadline = deadline
+      updateData.deadline = deadline;
     } else if (status === "extended" && deadline) {
-      updateData.deadline = deadline
+      updateData.deadline = deadline;
     }
 
     const updatedTicket = await Ticket.findOneAndUpdate(
@@ -61,6 +59,23 @@ export async function PUT(req) {
     );
 
     return NextResponse.json(updatedTicket);
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const ticketId = searchParams.get("id"); 
+    await connectDB();
+    const deletedTicket = await Ticket.findOneAndDelete({ _id: ticketId });
+
+    if (!deletedTicket) {
+      return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: "Ticket deleted successfully", ticket: deletedTicket });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
