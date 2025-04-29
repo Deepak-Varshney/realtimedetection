@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useClerk, UserButton, useUser } from '@clerk/nextjs';
 import { IconLogin } from '@tabler/icons-react';
 import { Button } from './ui/button';
+import { ModeToggle } from './toggle';
 
 
 
@@ -25,13 +26,6 @@ export default function Header() {
             });
     }, [user]);
 
-    const onSignOut = async () => {
-        try {
-            await signOut();
-        } catch (err) {
-            console.error('Sign out error:', err);
-        }
-    };
     const role = user?.publicMetadata?.role || 'user';
 
     return (
@@ -56,6 +50,9 @@ export default function Header() {
                                 </Button>
                             )
                         }
+                        <span className='p-4'>
+                        <ModeToggle/>
+                        </span>
                     </div>
                     <div className="relative">
                         <UserButton />
