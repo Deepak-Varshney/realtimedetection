@@ -10,9 +10,6 @@ import UserView from '@/components/UserView';
 export default async function Home() {
   const user = await currentUser();
   const currentRole = user?.publicMetadata?.role || 'user';
-
-
-
   if (!user) {
     redirect('/login');
   }
@@ -20,7 +17,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen">
       <main className="container mx-auto px-4 py-6">
-        {currentRole === 'user' && <UserView/>}
+        {currentRole === 'user' && <UserView user={user.id}/>}
         {currentRole === 'supervisor' && <SupervisorView />}
         {currentRole === 'admin' && <AdminView />}
       </main>
