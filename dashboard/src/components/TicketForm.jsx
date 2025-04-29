@@ -23,7 +23,7 @@ import axios from "axios";
 // Import the flattened options array
 import { flattenedOptions } from "@/utils/ticketOptions";
 
-export default function TicketForm() {
+export default function TicketForm({onTicketCreated}) {
     const form = useForm();
 
     // Watch the category to update subcategories dynamically
@@ -31,7 +31,11 @@ export default function TicketForm() {
     const createTicket = async (category, description, subcategory) => {
         try {
             const res = await axios.post('/api/tickets', { category, description, subcategory });
-            console.log("Ticket creation response:", res); // Log the response
+            console.log("Ticket creation response:", res);
+             // Log the response
+             if (onTicketCreated) {
+                onTicketCreated(res);
+              }
             toast.success('Ticket created successfully');
         } catch (error) {
             console.error("Error in creating ticket:", error); // Log the error

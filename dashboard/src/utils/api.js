@@ -7,16 +7,18 @@ import toast from 'react-hot-toast';
  */
 export const fetchData = async () => {
   try {
-    const [usersRes, ticketsRes, eventsRes] = await Promise.all([
+    const [usersRes, ticketsRes, eventsRes, expenseRes] = await Promise.all([
       axios.get('/api/users'),
       axios.get('/api/tickets'),
       axios.get('/api/events'),
+      // axios.get('/api/expense'),
     ]);
 
     return {
       users: usersRes.data,
       tickets: ticketsRes.data,
       events: eventsRes.data,
+      // expense: expenseRes.data,
     };
   } catch (err) {
     toast.error('Failed to load data');

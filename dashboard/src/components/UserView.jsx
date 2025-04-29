@@ -7,13 +7,13 @@ import { Button } from './ui/button';
 import { Popover, PopoverContent } from '@radix-ui/react-popover';
 import { PopoverTrigger } from './ui/popover';
 import TicketForm from './TicketForm';
-export default function UserView() {
+export default function UserView({ user }) {
   const [events, setEvents] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [payments, setPayments] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
   const [ticketToDelete, setTicketToDelete] = useState(''); // Store ticket ID to delete
-
+  console.log(user)
   useEffect(() => {
     const fetchTickets = async () => {
       try {
@@ -26,7 +26,9 @@ export default function UserView() {
     const fetchEvents = async () => {
       try {
         const res = await axios.get('/api/events');
-        setEvents(res.data);
+        const sortedEvents = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setEvents(sortedEvents);
+
       } catch (err) {
         console.error('Failed to fetch events:', err);
       }
@@ -34,6 +36,11 @@ export default function UserView() {
     fetchTickets();
     fetchEvents();
   }, [])
+
+  const handleNewTicket = (newTicket) => {
+    setTickets((prevTickets) => [newTicket, ...prevTickets]); // Add the new ticket to the top of the list
+    setIsPopoverOpen(false); // Close the form
+  };
   const deleteTicket = async (ticketId) => {
     try {
       await axios.delete(`/api/tickets?id=${ticketId}`);
@@ -61,7 +68,8 @@ export default function UserView() {
       const res = await axios.put('/api/events', { eventId });
       const updatedEvent = res.data;
       setEvents(events.map(e => e._id === updatedEvent._id ? updatedEvent : e));
-      setUnreadEvents(prev => prev - 1);
+      // setUnreadEvents(prev => prev - 1);
+      toast.success("Event Read Success")
     } catch {
       toast.error('Failed to mark event as read');
     }
@@ -84,7 +92,7 @@ export default function UserView() {
               <Button variant="outline">Raise a Ticket</Button>
             </PopoverTrigger>
             <PopoverContent className="relative w-96 bg-opacity-90 p-6 rounded-lg backdrop-blur-md shadow-lg">
-              <TicketForm />
+              <TicketForm onTicketCreated={handleNewTicket} />
             </PopoverContent>
           </Popover>
         </div>
@@ -126,11 +134,6 @@ export default function UserView() {
           Announcements
           ({events.length})
         </h2>
-        <button
-          onClick={() => setShowEvents(!showEvents)}
-          className="text-blue-600 hover:text-blue-800 text-sm"
-        >
-        </button>
         <div className="space-y-3">
           <div className="space-y-3">
             {events.length > 0 ? (
@@ -138,12 +141,16 @@ export default function UserView() {
                 <div key={event._id} className="border border-gray-200 rounded-md p-3">
                   <div className="flex justify-between items-start">
                     <h3 className="font-medium">{event.title}</h3>
-                    <button
-                      onClick={() => onMarkEventAsRead(event._id)}
-                      className="text-xs text-blue-600 hover:text-blue-800"
-                    >
-                      Mark as read
-                    </button>
+                    {event.readBy.includes(user) ? ( // Check if the user's ID is in the readBy array
+                      <span className="text-xs text-gray-500">Already Read</span>
+                    ) : (
+                      <button
+                        onClick={() => onMarkEventAsRead(event._id)}
+                        className="text-xs text-blue-600 hover:text-blue-800"
+                      >
+                        Mark as read
+                      </button>
+                    )}
                   </div>
                   <p className="text-sm text-gray-500 mt-1">{event.description}</p>
                   <p className="text-xs text-gray-400 mt-2">

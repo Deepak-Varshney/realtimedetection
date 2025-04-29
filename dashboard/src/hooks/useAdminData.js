@@ -4,6 +4,7 @@ import { fetchData, assignTicket } from '../utils/api';
 export default function useAdminData() {
   const [supervisors, setSupervisors] = useState([]);
   const [tickets, setTickets] = useState([]);
+  const [expense, setExpense] = useState([]);
   const [filteredTickets, setFilteredTickets] = useState([]);
   const [events, setEvents] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -14,7 +15,7 @@ export default function useAdminData() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const { users, tickets, events } = await fetchData();
+        const { users, tickets, events, expense } = await fetchData();
 
         // Filter supervisors
         const supervisorsOnly = users.filter(user => user.role === 'supervisor');
@@ -90,11 +91,13 @@ export default function useAdminData() {
     events,
     selectedTicket,
     selectedSupervisor,
+    expense,
     showAssignmentModal,
     setSelectedSupervisor,
     handleAssign,
     openAssignmentModal,
     closeAssignmentModal,
     filterTickets,
+    setEvents
   };
 }

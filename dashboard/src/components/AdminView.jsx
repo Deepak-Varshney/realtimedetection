@@ -1,14 +1,16 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import AssignmentModal from './AssignmentModal';
 import ReusableModal from './ReusableModal';
 import useAdminData from '../hooks/useAdminData';
 import { createEvent } from '@/utils/api';
-
+import axios from 'axios';
+import { toast } from 'sonner';
 export default function AdminView() {
   const {
     supervisors,
@@ -18,6 +20,8 @@ export default function AdminView() {
     selectedTicket,
     selectedSupervisor,
     showAssignmentModal,
+    expenses,
+    setEvents,
     setSelectedSupervisor,
     handleAssign,
     openAssignmentModal,
@@ -26,6 +30,7 @@ export default function AdminView() {
   } = useAdminData();
 
   const [filter, setFilter] = useState('');
+  const [selectedExpense, setSelectedExpense] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null); // State for the selected announcement
   const [currentUser, setCurrentUser] = useState({
     firstName: '',
@@ -53,8 +58,16 @@ export default function AdminView() {
     setFilter(value);
     filterTickets(value);
   };
-
-  // Columns for tickets
+  const deleteEvenet = async (eventId) => {
+    try {
+      await axios.delete(`/api/events?id=${eventId}`);
+      setEvents((prevEvents) => prevEvents.filter((event) => event._id !== eventId));
+      toast.success('Event deleted successfully');
+    }
+    catch (err) {
+      toast.error('Failed to delete event');
+    }
+  };
   const ticketColumns = [
     { accessorKey: 'category', header: 'Category' },
     { accessorKey: 'subcategory', header: 'Subcategory' },
@@ -71,17 +84,16 @@ export default function AdminView() {
       accessorKey: 'actions',
       header: 'Actions',
       cell: ({ row }) => (
-        <button
+        <Button
           onClick={() => openAssignmentModal(row.original._id)}
-          className="text-blue-500 hover:underline"
+
         >
           Assign
-        </button>
+        </Button>
       ),
     },
   ];
 
-  // Columns for announcements
   const eventColumns = [
     { accessorKey: 'title', header: 'Title' },
     { accessorKey: 'description', header: 'Description' },
@@ -94,6 +106,18 @@ export default function AdminView() {
       accessorKey: 'readBy',
       header: 'Read By',
       cell: ({ row }) => `${row.original.readBy.length} users`,
+    },
+    {
+      accessorKey: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => (
+        <Button
+          onClick={() => deleteEvenet(row.original._id)}
+          variant="destructive"
+        >
+          Delete
+        </Button>
+      ),
     },
   ];
 
@@ -132,36 +156,65 @@ export default function AdminView() {
         </Card>
       </div>
 
-      {/* Announcements */}
-      <Card className="p-6 space-y-6">
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Announcements</CardTitle>
-            <Button variant="default" size="sm" onClick={() => setSelectedEvent({ isNew: true })}>
-              New Announcement
-            </Button>
-          </div>
-          <CardDescription>Manage announcements for your team.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={eventColumns}
-            data={events}
-            onRowClick={(row) => setSelectedEvent(row.original)} // Open modal on row click
-          />
-        </CardContent>
-      </Card>
+      {/* Tabs for Events, Tickets, and Expenses */}
+      <Tabs defaultValue="events" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="events">Events</TabsTrigger>
+          <TabsTrigger value="tickets">Tickets</TabsTrigger>
+          <TabsTrigger value="expenses">Expenses</TabsTrigger>
+        </TabsList>
 
-      {/* Tickets */}
-      <Card className="p-6 space-y-6">
-        <CardHeader>
-          <CardTitle>Tickets</CardTitle>
-          <CardDescription>Manage and assign tickets for your team.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DataTable columns={ticketColumns} data={filteredTickets} />
-        </CardContent>
-      </Card>
+        {/* Events Tab */}
+        <TabsContent value="events">
+          <Card className="p-6 space-y-6">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>Announcements</CardTitle>
+                <Button variant="default" size="sm" onClick={() => setSelectedEvent({ isNew: true })}>
+                  New Announcement
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <DataTable
+                columns={eventColumns}
+                data={events}
+                onRowClick={(row) => setSelectedEvent(row.original)} // Open modal on row click
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tickets Tab */}
+        <TabsContent value="tickets">
+          <Card className="p-6 space-y-6">
+            <CardHeader>
+              <CardTitle>Tickets</CardTitle>
+              <CardContent>Manage and assign tickets for your team.</CardContent>
+            </CardHeader>
+            <CardContent>
+              <DataTable columns={ticketColumns} data={filteredTickets} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Expenses Tab */}
+        <TabsContent value="expenses">
+          <Card className="p-6 space-y-6">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>Expenses</CardTitle>
+                <Button variant="default" size="sm" onClick={() => setSelectedEvent({ isNew: true })}>
+                  New Expense
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              Expense Data
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Assignment Modal */}
       <AssignmentModal

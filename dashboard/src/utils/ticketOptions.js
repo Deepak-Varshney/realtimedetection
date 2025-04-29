@@ -141,3 +141,20 @@ export const flattenedOptions = ticketOptions.flatMap((category) =>
         subcategory: subcategory.name,
     }))
 );
+
+// Columns for announcements
+
+
+// Columns for tickets
+
+
+export const expenseColumns = [
+    { accessorKey: 'title', header: 'Title' },
+    { accessorKey: 'amount', header: 'Amount' },
+    { accessorKey: 'description', header: 'Description' },
+    {
+        accessorKey: 'createdAt',
+        header: 'Date',
+        cell: ({ row }) => new Date(row.original.createdAt).toLocaleString(),
+    },
+];
