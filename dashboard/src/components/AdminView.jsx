@@ -11,6 +11,7 @@ import useAdminData from '../hooks/useAdminData';
 import { createEvent } from '@/utils/api';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { EventDialog } from './ViewEvent';
 export default function AdminView() {
   const {
     supervisors,
@@ -27,6 +28,7 @@ export default function AdminView() {
     openAssignmentModal,
     closeAssignmentModal,
     filterTickets,
+    setTickets,
   } = useAdminData();
 
   const [filter, setFilter] = useState('');
@@ -52,6 +54,8 @@ export default function AdminView() {
     }
   }, [user.isLoaded]);
 
+
+
   // Filter tickets when the filter input changes
   const handleFilterChange = (e) => {
     const value = e.target.value;
@@ -66,6 +70,16 @@ export default function AdminView() {
     }
     catch (err) {
       toast.error('Failed to delete event');
+    }
+  };
+  const deleteTicket = async (ticketId) => {
+    try {
+      await axios.delete(`/api/tickets?id=${ticketId}`);
+      setTickets(tickets.filter(ticket => ticket._id !== ticketId));
+      toast.success('Ticket deleted successfully');
+    }
+    catch (err) {
+      toast.error('Failed to delete ticket');
     }
   };
   const ticketColumns = [
@@ -86,15 +100,35 @@ export default function AdminView() {
       cell: ({ row }) => (
         <Button
           onClick={() => openAssignmentModal(row.original._id)}
-
         >
           Assign
+        </Button>
+      ),
+    },
+    {
+      accessorKey: 'delete',
+      header: 'Delete',
+      cell: ({ row }) => (
+        <Button
+          onClick={() => deleteTicket(row.original._id)}
+          variant="destructive"
+        >
+          Delete
         </Button>
       ),
     },
   ];
 
   const eventColumns = [
+    {
+      accessorKey: 'view',
+      header: 'View',
+      cell: ({ row }) => (
+        <div className='text-blue-600'>
+          <EventDialog event={row.original} triggerText="View" />
+        </div>
+      ),
+    },
     { accessorKey: 'title', header: 'Title' },
     { accessorKey: 'description', header: 'Description' },
     {
@@ -175,7 +209,7 @@ export default function AdminView() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-[-40px]">
               <DataTable
                 columns={eventColumns}
                 data={events}
@@ -232,13 +266,8 @@ export default function AdminView() {
           isOpen={!!selectedEvent}
           onClose={() => setSelectedEvent(null)}
           title={selectedEvent.isNew ? 'New Announcement' : selectedEvent.title}
-          description={
-            selectedEvent.isNew
-              ? 'Fill in the details to create a new announcement.'
-              : selectedEvent.description
-          }
-          extraContent={
-            selectedEvent.isNew ? (
+          description='Fill in the details to create a new announcement.'
+          extraContent={(
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -261,16 +290,7 @@ export default function AdminView() {
                 />
                 <Button type="submit">Create</Button>
               </form>
-            ) : (
-              <div>
-                <p>
-                  <strong>Posted On:</strong> {new Date(selectedEvent.createdAt).toLocaleString()}
-                </p>
-                <p>
-                  <strong>Read By:</strong> {selectedEvent.readBy.length} users
-                </p>
-              </div>
-            )
+            ) 
           }
         />
       )}
