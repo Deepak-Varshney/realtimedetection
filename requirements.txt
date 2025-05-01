@@ -1,6 +1,7 @@
 fastapi
 uvicorn
 opencv-python
-torch
 face_recognition
 numpy
+ultralytics
+python-multipart

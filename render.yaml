@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: visitor-detector
+    env: docker
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: IP_CAMERA_URL
+        value: http://192.0.0.4:8080/video  # Replace with your IP camera URL
