@@ -33,6 +33,10 @@ export default function useAdminData() {
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
         setEvents(sortedEvents);
+        const sortedExpense = expense.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setEvents(sortedExpense);
       } catch (err) {
         console.error('Error loading data:', err);
       }
@@ -98,6 +102,7 @@ export default function useAdminData() {
     openAssignmentModal,
     closeAssignmentModal,
     filterTickets,
-    setEvents
+    setEvents,
+    setExpense
   };
 }

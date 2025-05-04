@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation';
-import TicketingDashboard from '@/components/TicketingDashboard';
 import { currentUser } from '@clerk/nextjs/server';
 import AdminView from '@/components/AdminView';
 import SupervisorView from '@/components/SupervisorView';

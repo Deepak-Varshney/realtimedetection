@@ -127,153 +127,153 @@ export default function AdminView() {
   const unassignedTickets = totalTickets - assignedTickets;
 
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Tickets</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{totalTickets}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Assigned Tickets</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{assignedTickets}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Unassigned Tickets</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{unassignedTickets}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs for Events, Tickets, and Expenses */}
-      <Tabs defaultValue="events" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="events">Events</TabsTrigger>
-          <TabsTrigger value="tickets">Tickets</TabsTrigger>
-          <TabsTrigger value="expenses">Expenses</TabsTrigger>
-        </TabsList>
-
-        {/* Events Tab */}
-        <TabsContent value="events">
-          <Card className="p-6 space-y-6">
+      <div className="space-y-6">
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Announcements</CardTitle>
-                <Button variant="default" size="sm" onClick={() => setSelectedEvent({ isNew: true })}>
-                  New Announcement
-                </Button>
-              </div>
+              <CardTitle>Total Tickets</CardTitle>
             </CardHeader>
             <CardContent>
-              <DataTable
-                columns={eventColumns}
-                data={events}
-                onRowClick={(row) => setSelectedEvent(row.original)} // Open modal on row click
-              />
+              <p className="text-2xl font-bold">{totalTickets}</p>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        {/* Tickets Tab */}
-        <TabsContent value="tickets">
-          <Card className="p-6 space-y-6">
+          <Card>
             <CardHeader>
-              <CardTitle>Tickets</CardTitle>
-              <CardContent>Manage and assign tickets for your team.</CardContent>
+              <CardTitle>Assigned Tickets</CardTitle>
             </CardHeader>
             <CardContent>
-              <DataTable columns={ticketColumns} data={filteredTickets} />
+              <p className="text-2xl font-bold">{assignedTickets}</p>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        {/* Expenses Tab */}
-        <TabsContent value="expenses">
-          <Card className="p-6 space-y-6">
+          <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Expenses</CardTitle>
-                <Button variant="default" size="sm" onClick={() => setSelectedEvent({ isNew: true })}>
-                  New Expense
-                </Button>
-              </div>
+              <CardTitle>Unassigned Tickets</CardTitle>
             </CardHeader>
             <CardContent>
-              Expense Data
+              <p className="text-2xl font-bold">{unassignedTickets}</p>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
 
-      {/* Assignment Modal */}
-      <AssignmentModal
-        show={showAssignmentModal}
-        supervisors={supervisors}
-        selectedSupervisor={selectedSupervisor}
-        setSelectedSupervisor={setSelectedSupervisor}
-        handleAssign={handleAssign}
-        closeModal={closeAssignmentModal}
-      />
+        {/* Tabs for Events, Tickets, and Expenses */}
+        <Tabs defaultValue="events" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="events">Events</TabsTrigger>
+            <TabsTrigger value="tickets">Tickets</TabsTrigger>
+            <TabsTrigger value="expenses">Expenses</TabsTrigger>
+          </TabsList>
 
-      {/* Reusable Modal for Announcements */}
-      {selectedEvent && (
-        <ReusableModal
-          isOpen={!!selectedEvent}
-          onClose={() => setSelectedEvent(null)}
-          title={selectedEvent.isNew ? 'New Announcement' : selectedEvent.title}
-          description={
-            selectedEvent.isNew
-              ? 'Fill in the details to create a new announcement.'
-              : selectedEvent.description
-          }
-          extraContent={
-            selectedEvent.isNew ? (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  createEvent(selectedEvent.title, selectedEvent.description, currentUser);
-                  setSelectedEvent(null);
-                }}
-                className="space-y-4"
-              >
-                <input
-                  type="text"
-                  placeholder="Title"
-                  className="w-full border rounded p-2"
-                  onChange={(e) => setSelectedEvent({ ...selectedEvent, title: e.target.value })}
+          {/* Events Tab */}
+          <TabsContent value="events">
+            <Card className="p-6 space-y-6">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Announcements</CardTitle>
+                  <Button variant="default" size="sm" onClick={() => setSelectedEvent({ isNew: true })}>
+                    New Announcement
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <DataTable
+                  columns={eventColumns}
+                  data={events}
+                  onRowClick={(row) => setSelectedEvent(row.original)} // Open modal on row click
                 />
-                <textarea
-                  placeholder="Description"
-                  className="w-full border rounded p-2"
-                  rows="4"
-                  onChange={(e) => setSelectedEvent({ ...selectedEvent, description: e.target.value })}
-                />
-                <Button type="submit">Create</Button>
-              </form>
-            ) : (
-              <div>
-                <p>
-                  <strong>Posted On:</strong> {new Date(selectedEvent.createdAt).toLocaleString()}
-                </p>
-                <p>
-                  <strong>Read By:</strong> {selectedEvent.readBy.length} users
-                </p>
-              </div>
-            )
-          }
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tickets Tab */}
+          <TabsContent value="tickets">
+            <Card className="p-6 space-y-6">
+              <CardHeader>
+                <CardTitle>Tickets</CardTitle>
+                <CardContent>Manage and assign tickets for your team.</CardContent>
+              </CardHeader>
+              <CardContent>
+                <DataTable columns={ticketColumns} data={filteredTickets} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Expenses Tab */}
+          <TabsContent value="expenses">
+            <Card className="p-6 space-y-6">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Expenses</CardTitle>
+                  <Button variant="default" size="sm" onClick={() => setSelectedEvent({ isNew: true })}>
+                    New Expense
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                Expense Data
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Assignment Modal */}
+        <AssignmentModal
+          show={showAssignmentModal}
+          supervisors={supervisors}
+          selectedSupervisor={selectedSupervisor}
+          setSelectedSupervisor={setSelectedSupervisor}
+          handleAssign={handleAssign}
+          closeModal={closeAssignmentModal}
         />
-      )}
-    </div>
+
+        {/* Reusable Modal for Announcements */}
+        {selectedEvent && (
+          <ReusableModal
+            isOpen={!!selectedEvent}
+            onClose={() => setSelectedEvent(null)}
+            title={selectedEvent.isNew ? 'New Announcement' : selectedEvent.title}
+            description={
+              selectedEvent.isNew
+                ? 'Fill in the details to create a new announcement.'
+                : selectedEvent.description
+            }
+            extraContent={
+              selectedEvent.isNew ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    createEvent(selectedEvent.title, selectedEvent.description, currentUser);
+                    setSelectedEvent(null);
+                  }}
+                  className="space-y-4"
+                >
+                  <input
+                    type="text"
+                    placeholder="Title"
+                    className="w-full border rounded p-2"
+                    onChange={(e) => setSelectedEvent({ ...selectedEvent, title: e.target.value })}
+                  />
+                  <textarea
+                    placeholder="Description"
+                    className="w-full border rounded p-2"
+                    rows="4"
+                    onChange={(e) => setSelectedEvent({ ...selectedEvent, description: e.target.value })}
+                  />
+                  <Button type="submit">Create</Button>
+                </form>
+              ) : (
+                <div>
+                  <p>
+                    <strong>Posted On:</strong> {new Date(selectedEvent.createdAt).toLocaleString()}
+                  </p>
+                  <p>
+                    <strong>Read By:</strong> {selectedEvent.readBy.length} users
+                  </p>
+                </div>
+              )
+            }
+          />
+        )}
+      </div>
   );
 }
