@@ -4,9 +4,10 @@ import { Ticket, Megaphone, Plus, CreditCard } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
-import { Popover, PopoverContent } from '@radix-ui/react-popover';
-import { PopoverTrigger } from './ui/popover';
-import TicketForm from './TicketForm';
+import { EventDialog } from './ViewEvent';
+import { TicketFormAlertDialog } from './TicketDialogue';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './ui/card';
+
 export default function UserView({ user }) {
   const [events, setEvents] = useState([]);
   const [tickets, setTickets] = useState([]);
@@ -18,7 +19,8 @@ export default function UserView({ user }) {
     const fetchTickets = async () => {
       try {
         const res = await axios.get('/api/tickets');
-        setTickets(res.data);
+        const sortedTickets = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setTickets(sortedTickets);
       } catch (err) {
         console.error('Failed to fetch tickets:', err);
       }
@@ -37,10 +39,8 @@ export default function UserView({ user }) {
     fetchEvents();
   }, [])
 
-  const handleNewTicket = (newTicket) => {
-    setTickets((prevTickets) => [newTicket, ...prevTickets]); // Add the new ticket to the top of the list
-    setIsPopoverOpen(false); // Close the form
-  };
+
+
   const deleteTicket = async (ticketId) => {
     try {
       await axios.delete(`/api/tickets?id=${ticketId}`);
@@ -76,9 +76,7 @@ export default function UserView({ user }) {
   };
 
   return (
-    <div className="grid grid-cols-1 overflow-auto md:grid-cols-2 h-[calc(100vh)] gap-6">
-      {/* Create Ticket Section */}
-
+    <div className="grid grid-cols-1 overflow-auto md:grid-cols-2 h-[calc(100vh-25vh)] gap-6">
       {/* My Tickets Section */}
       <div className="p-6 rounded-lg shadow">
         <div className='flex justify-between items-center mb-4'>
@@ -87,41 +85,59 @@ export default function UserView({ user }) {
             <Ticket className="w-5 h-5 text-blue-600" />
             My Tickets
           </h2>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline">Raise a Ticket</Button>
-            </PopoverTrigger>
-            <PopoverContent className="relative w-96 bg-opacity-90 p-6 rounded-lg backdrop-blur-md shadow-lg">
-              <TicketForm onTicketCreated={handleNewTicket} />
-            </PopoverContent>
-          </Popover>
+          <span className="flex text-accent items-center justify-center px-4 py-2 bg-[#8e51ff] rounded-md">
+            <TicketFormAlertDialog
+              triggerText="Create Ticket"
+              onTicketCreated={(res) => {
+                const createdTicket = res.data; // assuming backend returns new ticket in res.data
+                setTickets(prev => [...prev, createdTicket]);
+              }}
+            />
+
+          </span>
         </div>
         <div className="space-y-3">
+
           {tickets.length > 0 ? (
             tickets.map(ticket => (
-              <div key={ticket._id} className="border border-gray-200 rounded-md p-3">
-                <div className="flex justify-between items-start">
-                  <h3 className="font-medium">Category: {ticket.category}</h3>
-                  <h4 className="text-sm mt-1">Sub Category: {ticket.subcategory}</h4>
-                  <span className={`px-2 py-1 text-xs rounded-full ${ticket.status === 'open' ? 'bg-yellow-100 text-yellow-800' :
-                    ticket.status === 'assigned' ? 'bg-blue-100 text-blue-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
-                    {ticket.status}{ticket.status === 'extended' && ticket.deadline}
-                  </span>
-                </div>
-                <p className="text-sm mt-1">{ticket.description}</p>
-                {ticket.assignedTo && (
-                  <p className="text-sm text-gray-500 mt-1">Assigned to: {ticket.assignedTo.firstName}</p>
-                )}
-                <Button
-                  variant="destructive"
-                  onClick={() => openDeleteModal(ticket._id)}
-                  className="mt-3"
-                >
-                  Delete
-                </Button>
-              </div>
+              <Card key={ticket._id} className="border border-gray-200 rounded-md p-4 max-w-md mx-auto">
+                <CardHeader>
+                  <CardTitle className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium text-sm">Category: {ticket.category}</h3>
+                      <h4 className="text-xs mt-1 text-gray-600">Sub Category: {ticket.subcategory}</h4>
+                    </div>
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${ticket.status === 'open'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : ticket.status === 'assigned'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-green-100 text-green-800'
+                        }`}
+                    >
+                      {ticket.status}
+                      {ticket.status === 'extended' && ticket.deadline}
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-gray-700">{ticket.description}</p>
+                  {ticket.assignedTo && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Assigned to: {ticket.assignedTo.firstName}
+                    </p>
+                  )}
+                </CardContent>
+                <CardFooter className="flex justify-end">
+                  <Button
+                    variant="destructive"
+                    onClick={() => openDeleteModal(ticket._id)}
+                    className="text-xs px-3 py-1"
+                  >
+                    Delete
+                  </Button>
+                </CardFooter>
+              </Card>
             ))
           ) : (
             <p className="text-gray-500">No active tickets</p>
@@ -151,8 +167,14 @@ export default function UserView({ user }) {
                         Mark as read
                       </button>
                     )}
+                    <div
+                      className="text-xs text-blue-600 hover:text-blue-800"
+
+                    >
+                      <EventDialog event={event} triggerText='View' />
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">{event.description}</p>
+                  <p className="text-sm text-gray-500 mt-1 max-w-[150px] truncate">{event.description}</p>
                   <p className="text-xs text-gray-400 mt-2">
                     Posted on: {new Date(event.createdAt).toLocaleString()}
                   </p>

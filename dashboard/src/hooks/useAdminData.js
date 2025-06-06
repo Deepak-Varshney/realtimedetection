@@ -102,7 +102,10 @@ export default function useAdminData() {
     openAssignmentModal,
     closeAssignmentModal,
     filterTickets,
+
     setEvents,
     setExpense
+    setTickets,
+    setEvents
   };
 }
