@@ -55,7 +55,7 @@ known_encodings = []
 current_date = date.today()
 
 # Camera
-CAMERA_SOURCE = "http://192.0.0.4:8080/video"
+CAMERA_SOURCE = "http://213.3.30.80:6001/axis-cgi/mjpg/video.cgi"
 cap = cv2.VideoCapture(CAMERA_SOURCE)
 while not cap.isOpened():
     print("🔁 Retrying camera connection...")
@@ -102,12 +102,6 @@ def generate_frames():
 
     while True:
         ret, frame = cap.read()
-
-        # Loop video if it ends
-        if not ret:
-            print("⚠️ Reached end of video or failed to read. Rewinding...")
-            cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            continue
 
         frame_count += 1
         height, width = frame.shape[:2]
