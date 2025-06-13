@@ -3,3 +3,9 @@ fastapi
 uvicorn
 ultralytics
 python-multipart
+gunicorn
+opencv-python
+face_recognition
+pymongo
+cloudinary
+pillow
